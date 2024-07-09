@@ -54,4 +54,17 @@ $(document).ready(function() {
         }
         $('#result').html(result);
     });
+
+    $('line').change(function() {
+        $('#station option').remove();
+
+        const filteredData = data.filter(item => 
+            item['호선'] == this.val()
+        );
+
+        const stations = [...new Set(filteredData.map(item => item['출발역']))];
+        stations.forEach(station => {
+            $('#station').append(`<option value="${station}">${station}</option>`);
+        });
+    })
 });
