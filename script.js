@@ -55,11 +55,11 @@ $(document).ready(function() {
         $('#result').html(result);
     });
 
-    $('line').change(function() {
+    $('#line').change(function() {
         $('#station option').remove();
-
+        console.log(this.value);
         const filteredData = data.filter(item => 
-            item['호선'] == this.val()
+            item['호선'] == this.value
         );
 
         const stations = [...new Set(filteredData.map(item => item['출발역']))];
