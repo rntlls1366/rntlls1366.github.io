@@ -57,7 +57,7 @@ $(document).ready(function() {
 
     $('#line').change(function() {
         $('#station option').remove();
-        console.log(this.value);
+
         const filteredData = data.filter(item => 
             item['호선'] == this.value
         );
