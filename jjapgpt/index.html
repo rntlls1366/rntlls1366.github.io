@@ -23,10 +23,12 @@
             remember = localStorage.getItem("remember");
 
             if (apiKey) $("#api-key").val(apiKey);
-            if (remember == true) $("#remember").prop('checked', true);
-            else $("#remember").prop('checked', false);
+            
+            
             //api 키 입력 모달창 열기 닫기
             $(".add-button").click(() => {
+                if (remember == true) $("#remember").prop('checked', true);
+                else $("#remember").prop('checked', false);
                 $("#myModal").show();
             });
             $(".close").click(() => {
@@ -160,7 +162,7 @@
                                 result_message += parsedData.choices[0].delta.content;
                                 const htmlContent = marked.parse(result_message);
                                 $(".message-content:last").html(htmlContent);
-                                
+
                             }
                         } catch (e) {
                             console.error('Error parsing data:', e);
