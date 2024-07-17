@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key는 셀프</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/13.0.2/marked.min.js"></script>
+</head>
+
+<body>
+    <script>
+
+        var apiKey;
+        var remember = 'false';
+        var message_history = "";
+
+        $(document).ready(() => {
+
+            apiKey = localStorage.getItem("api-key");
+            remember = localStorage.getItem("remember");
+
+            if(apiKey) $("#api-key").val(apiKey);
+            if(remember == true) $("#remember").prop('checked', true);
+            else $("#remember").prop('checked', false);
+            //api 키 입력 모달창 열기 닫기
+            $(".add-button").click(() => {
+                $("#myModal").show();
+            });
+            $(".close").click(() => {
+                $("#myModal").hide();
+            });
+
+            //api 키 입력 이벤트
+            $("#api-submit").click(setApi);
+            $("#api-key").keyup((e) => {
+                if (e.keyCode == 13) setApi();
+            });
+
+            $("#message-submit").click(() => {
+                fetchSSE($("#message").val());
+            });
+            $("#message").keyup((e) => {
+                if (e.keyCode == 13) fetchSSE($("#message").val());
+            });
+
+        });
+
+        //대화 기억 여부, api 키 저장
+        const setApi = () => {
+            localStorage.setItem("api-key", $("#api-key").val());
+            localStorage.setItem("remember", $('#remember').is(':checked'));
+
+            apiKey = $("#api-key").val();
+            remember = $('#remember').is(':checked');
+            $("#myModal").hide();
+        };
+
+        const fetchSSE = async (message) => {
+
+            //내 질문 말풍선 생성
+            $(".messages").append(`
+                <div class="message user">
+                    <div class="message-content">
+                        ${message}
+                    </div>
+                </div>
+            `);
+
+            $("#message").val("");
+
+            if (!apiKey) {
+                $(".messages").append(`
+                    <div class="message bot">
+                        <div class="message-content">
+                            우측 상단 + 버튼을 통해 OpenAI ApiKey를 입력해주세요.
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
+            let history_request = "";
+            if(remember == true) {
+                history_request = message_history;
+            }
+
+            const url = 'https://api.openai.com/v1/chat/completions';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            };
+
+            const body = JSON.stringify({
+                model: 'gpt-4o-2024-05-13', // 사용할 모델 명시
+                messages: [
+                    { role: 'user', content: message },
+                    { role: 'assistant', content: history_request}
+                ],
+                stream: true // SSE를 사용하기 위한 stream 옵션 활성화
+            });
+
+            // fetch로 POST 요청을 보내고 응답을 스트림으로 처리
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: body
+            });
+
+            if (!response.ok) {
+                console.error('Error:', response.statusText);
+                return;
+            }
+
+            //GPT 답변 말풍선 생성
+            $(".messages").append(`
+                <div class="message bot">
+                    <div class="message-content">
+                    </div>
+                </div>
+            `);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+
+            let result_message = "";
+            let buffer = '';
+
+            // 스트림 데이터를 읽고 콘솔에 출력
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                
+                const chunk = decoder.decode(value);
+                buffer += chunk;
+
+                // SSE 데이터 형식 파싱 및 출력
+                const events = buffer.split('\n\n');
+                buffer = events.pop();
+                for (const event of events) {
+                    if (event.startsWith('data: ')) {
+                        const data = event.replace('data: ', '');
+                        if (data === '[DONE]') {
+                            message_history += `질문 : ${message}`;
+                            message_history += `\n답변 : ${result_message}\n`;
+                            return;
+                        }
+                        try {
+                            const parsedData = JSON.parse(data);
+
+                            if (parsedData.choices && parsedData.choices[0].delta && parsedData.choices[0].delta.content) {
+                                result_message += parsedData.choices[0].delta.content;
+                                const htmlContent = marked.parse(result_message);
+                                $(".message-content:last").html(htmlContent);
+                            }
+                        } catch (e) {
+                            console.error('Error parsing data:', e);
+                        }
+                    }
+                }
+            }
+
+            
+        };
+
+    </script>
+    <button class="add-button">+</button>
+    <div class="chat-container">
+        <div class="messages">
+
+        </div>
+    </div>
+    <div class="input-container">
+        <input type="text" id="message" placeholder="메시지를 입력하세요...">
+        <button id="message-submit">전송</button>
+    </div>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>이전 대화 기억하기</h2>
+            <input id="remember" type="checkbox">(토큰 소모비용 많음)
+            <h2>API Key 입력</h2>
+            <input id="api-key" type="text" placeholder="API Key를 입력하세요"
+                style="width: 90%; padding: 10px; margin-top: 10px;">
+            <button id="api-submit"
+                style="width: 100%; padding: 10px; margin-top: 10px; background-color: #007bff; color: white; border: none; border-radius: 5px;">저장</button>
+        </div>
+    </div>
+</body>
+
+</html>
