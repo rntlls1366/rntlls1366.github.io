@@ -160,6 +160,7 @@
                                 result_message += parsedData.choices[0].delta.content;
                                 const htmlContent = marked.parse(result_message);
                                 $(".message-content:last").html(htmlContent);
+                                
                             }
                         } catch (e) {
                             console.error('Error parsing data:', e);
