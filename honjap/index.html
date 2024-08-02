@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <title>지하철 혼잡도 정보</title>
@@ -9,10 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
 <script>
-     $(document).ready(function() {
-        $('#station').select2(); 
+    $(document).ready(function () {
+        $('#station').select2();
     });
 </script>
+
 <body>
     <h1>지하철 혼잡도 정보 조회</h1>
     <form id="filterForm">
@@ -22,10 +24,10 @@
             <option value="토요일">토요일</option>
             <option value="일요일">일요일</option>
         </select>
-        
+
         <label for="line">호선:</label>
         <select id="line"></select>
-        
+
         <label for="station">출발역:</label>
         <select id="station">
             <option value="">호선에 맞는 역을 선택해주세요.</option>
@@ -33,19 +35,20 @@
 
         <label for="time">시간대:</label>
         <select id="time"></select>
-        
+
         <button type="submit">조회</button>
     </form>
-    
+
     <div id="result"></div>
-    
-    <br/><br/>
-    34점 : 좌석 수와 승객 수가 같음
-    <br/><br/>
+
+    <br /><br />
+    참고 : 34점 = 좌석 수와 승객 수가 같음
+    <br /><br />
     출처 : https://www.data.go.kr/data/15071311/fileData.do
-    <br/>
-    정보 기준일 : 2024-04-11
+    <br />
+    정보 기준일 : 2024-07-16
 
     <script src="script.js"></script>
 </body>
+
 </html>
