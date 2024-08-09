@@ -17,28 +17,29 @@
 
 <body>
     <h1>지하철 혼잡도 정보 조회</h1>
-    <form id="filterForm">
-        <label for="day">요일:</label>
-        <select id="day">
-            <option value="평일">평일</option>
-            <option value="토요일">토요일</option>
-            <option value="일요일">일요일</option>
-        </select>
+    <div class="sel-box">
+        <form id="filterForm">
+            <label for="day">요일:</label>
+            <select id="day">
+                <option value="평일">평일</option>
+                <option value="토요일">토요일</option>
+                <option value="일요일">일요일</option>
+            </select>
 
-        <label for="line">호선:</label>
-        <select id="line"></select>
+            <label for="line">호선:</label>
+            <select id="line"></select>
 
-        <label for="station">출발역:</label>
-        <select id="station">
-            <option value="">호선에 맞는 역을 선택해주세요.</option>
-        </select>
+            <label for="station">출발역:</label>
+            <select id="station">
+                <option value="">호선에 맞는 역을 선택해주세요.</option>
+            </select>
 
-        <label for="time">시간대:</label>
-        <select id="time"></select>
+            <label for="time">시간대:</label>
+            <select id="time"></select>
 
-        <button type="submit">조회</button>
-    </form>
-
+            <button type="submit">조회</button>
+        </form>
+    </div>
     <div id="result"></div>
 
     <br /><br />
