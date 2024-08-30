@@ -21,16 +21,6 @@ h1 {
     font-size: 24px;
 }
 
-.download-btn {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
 .download-btn:hover {
     background-color: #0056b3;
 }
