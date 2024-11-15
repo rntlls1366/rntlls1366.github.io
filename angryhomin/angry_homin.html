@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angry Homin</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #87CEEB;
+    }
+
+    #gameCanvas {
+      border: 2px solid #333;
+      background: #d3d3d3;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.17.1/matter.min.js"></script>
+  <script>
+    const { Engine, Render, Runner, World, Bodies, Mouse, MouseConstraint, Constraint, Body, Events } = Matter;
+
+    const engine = Engine.create();
+    const { world } = engine;
+
+    const canvas = document.getElementById('gameCanvas');
+    const render = Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: 800,
+        height: 400,
+        wireframes: false,
+        background: '#87CEEB'
+      }
+    });
+    Render.run(render);
+
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    const ground = Bodies.rectangle(400, 390, 810, 60, { isStatic: true, render: { fillStyle: '#654321' } });
+    World.add(world, ground);
+
+    const birdImage = 'https://avatars.githubusercontent.com/u/76022353?v=4';
+
+    const bird = Bodies.rectangle(150, 300, 30, 30, {  // 크기를 정사각형으로 설정
+      density: 0.004,
+      restitution: 0.8,
+      render: {
+        sprite: {
+          texture: birdImage,
+          xScale: 0.15,
+          yScale: 0.15
+        }
+      }
+    });
+    World.add(world, bird);
+
+    const slingshot = Constraint.create({
+      pointA: { x: 150, y: 300 },
+      bodyB: bird,
+      stiffness: 0.05,
+      render: {
+        lineWidth: 5,
+        strokeStyle: 'black'
+      }
+    });
+    World.add(world, slingshot);
+
+    const target = Bodies.circle(700, 350, 20, { isStatic: true, render: { fillStyle: 'green' } });
+    World.add(world, target);
+
+    // Simple wooden structure with two pillars and a roof
+    const woodColor = '#8B4513';
+    const leftPillar = Bodies.rectangle(650, 330, 20, 60, { render: { fillStyle: woodColor } });
+    const rightPillar = Bodies.rectangle(750, 330, 20, 60, { render: { fillStyle: woodColor } });
+    const roof = Bodies.rectangle(700, 300, 100, 20, { render: { fillStyle: woodColor } });
+
+    World.add(world, [leftPillar, rightPillar, roof]);
+
+    const mouse = Mouse.create(render.canvas);
+    const mouseConstraint = MouseConstraint.create(engine, {
+      mouse: mouse,
+      constraint: {
+        stiffness: 0.2,
+        render: { visible: false }
+      }
+    });
+    World.add(world, mouseConstraint);
+
+    let isLaunched = false;
+
+    Events.on(mouseConstraint, 'enddrag', (event) => {
+      if (event.body === bird) {
+        isLaunched = true;
+        setTimeout(() => {
+          World.remove(world, slingshot);
+        }, 1);
+      }
+    });
+
+    Events.on(engine, 'afterUpdate', () => {
+      if (isLaunched && (bird.position.x > 800 || bird.position.y > 400 || bird.position.x < 0 || bird.position.y < 0)) {
+        Body.setPosition(bird, { x: 150, y: 300 });
+        Body.setVelocity(bird, { x: 0, y: 0 });
+        World.add(world, slingshot);
+        isLaunched = false;
+      }
+    });
+
+    Events.on(engine, 'collisionStart', (event) => {
+      event.pairs.forEach((pair) => {
+        if ((pair.bodyA === bird && pair.bodyB === target) || (pair.bodyB === bird && pair.bodyA === target)) {
+          setTimeout(() => {
+            alert("CLEAR");
+            history.go(0);
+          }, 100);
+        }
+      });
+    });
+
+    render.mouse = mouse;
+  </script>
+
+</body>
+
+</html>
